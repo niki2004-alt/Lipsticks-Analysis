@@ -7,9 +7,10 @@ import pandas as pd
 import streamlit as st
 
 BASE_DIR = Path(__file__).resolve().parent
-SURVEY_CSV = BASE_DIR / "csv/survey.csv"
-MARKET1_CSV = BASE_DIR / "csv/market1.csv"
-MARKET2_CSV = BASE_DIR / "csv/market2.csv"
+SURVEY_CSV = BASE_DIR / "csv" / "survey.csv"
+MARKET1_CSV = BASE_DIR / "csv" / "market1.csv"
+MARKET2_CSV = BASE_DIR / "csv" / "market2.csv"
+MARKET_COLOR_CODES_CSV = BASE_DIR / "csv" / "market_color_codes.csv"
 
 
 INVALID_BRANDS = {"", "no", "nothing"}
@@ -55,6 +56,12 @@ CHART_COLOR_MAP = {
     "wine": "#722f37",
     "plum": "#8e4585",
 }
+
+MARKET_COLOR_COLUMNS = [
+    "sold_color_code_hex1",
+    "sold_color_code_hex2",
+    "sold_color_code_hex3",
+]
 
 
 def normalize_text(value: str) -> str:
@@ -115,6 +122,56 @@ def parse_count(value: str) -> int:
     return int(round(number))
 
 
+def normalize_hex(value: str) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    if not text.startswith("#"):
+        text = f"#{text}"
+    if not re.fullmatch(r"#[0-9a-fA-F]{6}", text):
+        return None
+    return text.upper()
+
+
+def hex_to_rgb(hex_code: str) -> tuple[int, int, int]:
+    return (
+        int(hex_code[1:3], 16),
+        int(hex_code[3:5], 16),
+        int(hex_code[5:7], 16),
+    )
+
+
+def srgb_to_linear(channel: int) -> float:
+    value = channel / 255.0
+    if value <= 0.04045:
+        return value / 12.92
+    return ((value + 0.055) / 1.055) ** 2.4
+
+
+def color_distance(hex_a: str, hex_b: str) -> float:
+    rgb_a = hex_to_rgb(hex_a)
+    rgb_b = hex_to_rgb(hex_b)
+    la = [srgb_to_linear(c) for c in rgb_a]
+    lb = [srgb_to_linear(c) for c in rgb_b]
+    return sum((la[i] - lb[i]) ** 2 for i in range(3))
+
+
+def map_hex_to_color(hex_code: str) -> str | None:
+    normalized = normalize_hex(hex_code)
+    if not normalized:
+        return None
+    best_color = None
+    best_distance = None
+    for color_name, ref_hex in CHART_COLOR_MAP.items():
+        distance = color_distance(normalized, ref_hex)
+        if best_distance is None or distance < best_distance:
+            best_distance = distance
+            best_color = color_name
+    return best_color
+
+
 def extract_colors(text: str) -> set[str]:
     normalized = normalize_text(text)
     found = set()
@@ -122,6 +179,43 @@ def extract_colors(text: str) -> set[str]:
         if re.search(rf"\b{re.escape(color)}\b", normalized):
             found.add(color)
     return found
+
+
+def load_market_color_codes() -> pd.DataFrame:
+    if not MARKET_COLOR_CODES_CSV.exists():
+        return pd.DataFrame()
+
+    df = pd.read_csv(
+        MARKET_COLOR_CODES_CSV,
+        encoding="utf-8-sig",
+        engine="python",
+        on_bad_lines="skip",
+    )
+    counter = Counter()
+
+    for _, row in df.iterrows():
+        for col in MARKET_COLOR_COLUMNS:
+            color_hex = row.get(col)
+            color_name = map_hex_to_color(color_hex)
+            if color_name:
+                counter[color_name] += 1
+
+    if not counter:
+        return pd.DataFrame()
+
+    total = sum(counter.values())
+    color_df = pd.DataFrame(
+        [
+            {
+                "color": to_title(color),
+                "count": count,
+                "probability": count / total,
+                "hex": CHART_COLOR_MAP.get(color, "#9e9e9e"),
+            }
+            for color, count in counter.most_common()
+        ]
+    )
+    return color_df
 
 
 def load_market_data() -> pd.DataFrame:
@@ -294,6 +388,36 @@ def main() -> None:
         st.subheader("Top Brands")
         st.bar_chart(brand_df.head(10).set_index("brand")["count"])
         st.dataframe(brand_df, use_container_width=True)
+
+    st.subheader("Market Color Code Distribution")
+    market_color_df = load_market_color_codes()
+    if market_color_df.empty:
+        st.warning("market_color_codes.csv was not found or has no valid hex values.")
+    else:
+        market_color_chart = (
+            alt.Chart(market_color_df)
+            .mark_bar()
+            .encode(
+                x=alt.X(
+                    "color:N",
+                    sort=market_color_df["color"].tolist(),
+                    title="Color",
+                ),
+                y=alt.Y(
+                    "probability:Q",
+                    axis=alt.Axis(format="~%"),
+                    title="Probability",
+                ),
+                color=alt.Color("hex:N", scale=None, legend=None),
+                tooltip=[
+                    alt.Tooltip("color:N", title="Color"),
+                    alt.Tooltip("count:Q", title="Count"),
+                    alt.Tooltip("probability:Q", title="Probability", format="~%"),
+                ],
+            )
+        )
+        st.altair_chart(market_color_chart, use_container_width=True)
+        st.dataframe(market_color_df, use_container_width=True)
 
     st.subheader("Survey Match With Market1 + Market2")
     default_brands = brand_df["brand"].head(3).tolist()
