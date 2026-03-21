@@ -111,20 +111,31 @@ def main():
         st.error(f"Unable to read data: {e}")
         return
 
-    st.header("1. Age group participation")
-    st.table(stats["age_counts"].rename_axis("Age range").reset_index(name="Responses"))
+    # Age group participation section removed per request.
 
     st.header("2. Global preferences")
     c1, c2, c3 = st.columns(3)
     with c1:
-        st.subheader("Top colors")
-        st.table(stats["colors"].head(10))
+        st.subheader("Top color")
+        if not stats["colors"].empty:
+            top_color = stats["colors"].iloc[0]
+            st.metric("Color", top_color["color"], int(top_color["count"]))
+        else:
+            st.metric("Color", "N/A", 0)
     with c2:
-        st.subheader("Top finishes")
-        st.table(stats["finishes"].head(10))
+        st.subheader("Top finish")
+        if not stats["finishes"].empty:
+            top_finish = stats["finishes"].iloc[0]
+            st.metric("Finish", top_finish["finish"], int(top_finish["count"]))
+        else:
+            st.metric("Finish", "N/A", 0)
     with c3:
-        st.subheader("Top brands")
-        st.table(stats["brands"].head(10))
+        st.subheader("Top brand")
+        if not stats["brands"].empty:
+            top_brand = stats["brands"].iloc[0]
+            st.metric("Brand", top_brand["brand"], int(top_brand["count"]))
+        else:
+            st.metric("Brand", "N/A", 0)
 
     st.header("3. Age-group preference profiles")
     st.table(stats["age_profiles"])
@@ -132,11 +143,17 @@ def main():
     st.header("4. Charts")
     st.bar_chart(stats["age_counts"])
 
-    st.write("### Top 10 colors")
-    st.bar_chart(stats["colors"].set_index("color")[["count"]])
+    st.write("### Top color")
+    if not stats["colors"].empty:
+        st.bar_chart(stats["colors"].head(1).set_index("color")[["count"]])
+    else:
+        st.info("No color data available.")
 
-    st.write("### Top 10 brands")
-    st.bar_chart(stats["brands"].set_index("brand")[["count"]])
+    st.write("### Top brand")
+    if not stats["brands"].empty:
+        st.bar_chart(stats["brands"].head(1).set_index("brand")[["count"]])
+    else:
+        st.info("No brand data available.")
 
 
 if __name__ == "__main__":
