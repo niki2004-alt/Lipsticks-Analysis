@@ -10,7 +10,7 @@ Age range,  lipstick finish  ,Color,Brand
 18–24,Matte,Brown,rom&nd
 35–44,Velvet,Red,Revlon
 18–24,Velvet,Scarlet ,rom&nd
-Over 45,Satin,No,"Maybelline, Dior, Revlon"
+Over 45,Satin,Red,"Maybelline, Dior, Revlon"
 35–44,Matte,red color,Maybelline
 18–24,Tint,pink,Chanel
 18–24,Matte,Red,Revlon
@@ -33,7 +33,7 @@ Over 45,Satin,No,"Maybelline, Dior, Revlon"
 18–24,Tint,orange,MAC Cosmetics
 18–24,Velvet,Red,rom&nd
 18–24,Velvet,No,No
-Under 18,Velvet,Yellow or pink or red,rom&nd
+Under 18,Velvet, Red and Brown,rom&nd
 18–24,Tint,Red,Health shop 
 18–24,Tint,White ,3CE
 18–24,Tint,Rosepink,"rom&nd, Bella"
@@ -57,11 +57,11 @@ Under 18,Velvet,Yellow or pink or red,rom&nd
 18–24,Tint,Red,Maybelline
 18–24,Matte,Matte,GoGo Tales
 18–24,Tint,Red,Maybelline
-Under 18,Tint,"Brown ,black,white and pale color","BLACK ROUGE, 3CE, rom&nd, Revlon, "
+Under 18,Tint,Coralor or Brown, "BLACK ROUGE, 3CE, rom&nd, Revlon, "
 25–34,Tint,Brown,Revlon
 25–34,Tint,Pink,BLACK ROUGE
 18–24,Matte,red,BLACK ROUGE
-Over 45,Matte,pink,bella
+Over 45,Matte,Nude,bella
 18–24,Tint,pink,"Maybelline, "
 18–24,Tint,Black and white,rom&nd
 18–24,Tint,Red,3CE
@@ -79,7 +79,7 @@ Over 45,Matte,pink,bella
 18–24,Tint,Soft pink ,"Maybelline, rom&nd, Revlon"
 18–24,Matte,Red,rom&nd
 18–24,Velvet,nude,Maybelline
-Over 45,Matte,Blue,Revlon
+Over 45,Matte,Coral,Revlon
 25–34,Tint,orange,3CE
 18–24,Velvet,Red,rom&nd
 25–34,Matte,Black,"rom&nd, Novo"
@@ -109,7 +109,7 @@ Over 45,Matte,Blue,Revlon
 18–24,Velvet,pink colour,"Maybelline, 3CE, Dior"
 18–24,Tint,Brown,Novo
 25–34,Matte,Red ,"Maybelline, "
-Under 18,Tint,Black ,"3CE, Chanel"
+Under 18,Tint,Nude ,"3CE, Chanel"
 35–44,Tint,Brown ,Revlon
 18–24,Velvet,အနီ,BLACK ROUGE
 18–24,Tint,Red,BLACK ROUGE
