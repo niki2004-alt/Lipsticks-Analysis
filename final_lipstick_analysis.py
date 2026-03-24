@@ -6,8 +6,11 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
+from lipstick_analysis_core import analyze_age_color_brand
+
 BASE_DIR = Path(__file__).resolve().parent
 SURVEY_CSV = BASE_DIR / "csv" / "survey.csv"
+SURVEY_COLOR_CSV = BASE_DIR / "csv" / "survey color.csv"
 MARKET1_CSV = BASE_DIR / "csv" / "market1.csv"
 MARKET2_CSV = BASE_DIR / "csv" / "market2.csv"
 MARKET_COLOR_CODES_CSV = BASE_DIR / "csv" / "market_color_codes.csv"
@@ -388,6 +391,17 @@ def main() -> None:
         st.subheader("Top Brands")
         st.bar_chart(brand_df.head(10).set_index("brand")["count"])
         st.dataframe(brand_df, use_container_width=True)
+
+    st.subheader("Survey: Age vs Color vs Brand")
+    age_source = SURVEY_COLOR_CSV if SURVEY_COLOR_CSV.exists() else SURVEY_CSV
+    try:
+        age_stats = analyze_age_color_brand(age_source)
+    except Exception as exc:
+        st.warning(f"Unable to analyze age/color/brand survey from {age_source.name}: {exc}")
+    else:
+        st.caption(f"Source: {age_source.name}")
+        profiles_view = age_stats.age_profiles.drop(columns=["Responses"], errors="ignore")
+        st.dataframe(profiles_view, hide_index=True, use_container_width=True)
 
     st.subheader("Market Color Code Distribution")
     market_color_df = load_market_color_codes()
